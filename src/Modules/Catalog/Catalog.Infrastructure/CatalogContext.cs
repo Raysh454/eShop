@@ -9,8 +9,13 @@ public class CatalogContext : DbContext
     {
     }
 
-    DbSet<CatalogItem> CatalogItems { get; set; }
-    DbSet<CatalogBrand> CatalogBrands { get; set; }
-    DbSet<CatalogType> CatalogTypes { get; set; }
+    public DbSet<CatalogItem> CatalogItems { get; set; }
+    public DbSet<CatalogBrand> CatalogBrands { get; set; }
+    public DbSet<CatalogType> CatalogTypes { get; set; }
 
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(typeof(CatalogContext).Assembly);
+    }
 }
