@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuildingBlocks.Contracts")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f3849377e68c80b7bb30338a91035c1a8944ce8e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+87964b4a3ac60cb717a113204eff2b58a754f119")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuildingBlocks.Contracts")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuildingBlocks.Contracts")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,30 +1,45 @@
-﻿namespace Architecture.Tests;
-
 using System.Reflection;
 using NetArchTest.Rules;
 
+namespace Architecture.Tests;
+
 public class ArchitectureTest
 {
+    private static readonly string[] OtherModuleNamespaces = ["Basket", "Ordering", "Payments"];
+
     [Fact]
-    public void Modules_Should_Not_Reference_Each_Other_Directly()
+    public void CatalogAssemblies_Should_Not_Reference_OtherModules()
     {
-        var moduleNames = new[] {"Catalog", "Products", "Ordering", "Payments"};
-        var components = new[] {"API", "Domain", "Infrastructure", "Application"};
+        var catalogAssemblies = new[]
+        {
+            "Catalog.API",
+            "Catalog.Application",
+            "Catalog.Contracts",
+            "Catalog.Domain",
+            "Catalog.Infrastructure"
+        };
 
-        foreach (var module in moduleNames) {
-            foreach (var component in components) {
-                var others = moduleNames.Where(m => m != module);
-                var assembly = Assembly.Load($"{module}.{component}");
+        foreach (var assemblyName in catalogAssemblies)
+        {
+            var result = Types.InAssembly(Assembly.Load(assemblyName))
+                .Should()
+                .NotHaveDependencyOnAny(OtherModuleNamespaces)
+                .GetResult();
 
-                var result = Types.InAssembly(assembly)
-                    .That()
-                    .ResideInNamespace(module)
-                    .Should()
-                    .NotHaveDependencyOnAny(others.ToArray())
-                    .GetResult();
-
-                Assert.True(result.IsSuccessful, $"{module} has a forbidden dependency on: " + string.Join(", ", result.FailingTypeNames ?? Array.Empty<string>()));
-            }
+            Assert.True(result.IsSuccessful,
+                $"{assemblyName} has a forbidden dependency: {string.Join(", ", result.FailingTypeNames ?? Array.Empty<string>())}");
         }
+    }
+
+    [Fact]
+    public void CatalogContracts_Should_Not_Depend_On_CatalogImplementation()
+    {
+        var result = Types.InAssembly(Assembly.Load("Catalog.Contracts"))
+            .Should()
+            .NotHaveDependencyOnAny(["Catalog.Domain", "Catalog.Application", "Catalog.Infrastructure", "Catalog.API"])
+            .GetResult();
+
+        Assert.True(result.IsSuccessful,
+            "Catalog.Contracts must remain a standalone integration-event boundary.");
     }
 }

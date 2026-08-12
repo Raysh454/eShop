@@ -38,6 +38,36 @@
           }
         }
       },
+      "FluentValidation/12.1.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/FluentValidation.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/FluentValidation.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "FluentValidation.DependencyInjectionExtensions/12.1.1": {
+        "type": "package",
+        "dependencies": {
+          "FluentValidation": "12.1.1",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "2.1.0"
+        },
+        "compile": {
+          "lib/net8.0/FluentValidation.DependencyInjectionExtensions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/FluentValidation.DependencyInjectionExtensions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "MediatR/14.2.0": {
         "type": "package",
         "dependencies": {
@@ -716,6 +746,19 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "BuildingBlocks.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "MediatR": "14.2.0"
+        },
+        "compile": {
+          "bin/placeholder/BuildingBlocks.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/BuildingBlocks.Application.dll": {}
+        }
+      },
       "BuildingBlocks.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -727,6 +770,36 @@
         },
         "runtime": {
           "bin/placeholder/BuildingBlocks.Domain.dll": {}
+        }
+      },
+      "Catalog.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "BuildingBlocks.Application": "1.0.0",
+          "Catalog.Contracts": "1.0.0",
+          "Catalog.Domain": "1.0.0",
+          "FluentValidation": "12.1.1",
+          "FluentValidation.DependencyInjectionExtensions": "12.1.1",
+          "MediatR": "14.2.0",
+          "Microsoft.EntityFrameworkCore": "10.0.10",
+          "Microsoft.Extensions.DependencyInjection": "10.0.10"
+        },
+        "compile": {
+          "bin/placeholder/Catalog.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Catalog.Application.dll": {}
+        }
+      },
+      "Catalog.Contracts/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Catalog.Contracts.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Catalog.Contracts.dll": {}
         }
       },
       "Catalog.Domain/1.0.0": {
@@ -783,6 +856,36 @@
         "lib/net8.0/Azure.Identity.xml",
         "lib/netstandard2.0/Azure.Identity.dll",
         "lib/netstandard2.0/Azure.Identity.xml"
+      ]
+    },
+    "FluentValidation/12.1.1": {
+      "sha512": "EPpkIe1yh1a0OXyC100oOA8WMbZvqUu5plwhvYcb7oSELfyUZzfxV48BLhvs3kKo4NwG7MGLNgy1RJiYtT8Dpw==",
+      "type": "package",
+      "path": "fluentvalidation/12.1.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "fluent-validation-icon.png",
+        "fluentvalidation.12.1.1.nupkg.sha512",
+        "fluentvalidation.nuspec",
+        "lib/net8.0/FluentValidation.dll",
+        "lib/net8.0/FluentValidation.xml"
+      ]
+    },
+    "FluentValidation.DependencyInjectionExtensions/12.1.1": {
+      "sha512": "D0VXh4dtjjX2aQizuaa0g6R8X3U1JaVqJPfGCvLwZX9t/O2h7tkpbitbadQMfwcgSPdDbI2vDxuwRMv/Uf9dHA==",
+      "type": "package",
+      "path": "fluentvalidation.dependencyinjectionextensions/12.1.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "fluent-validation-icon.png",
+        "fluentvalidation.dependencyinjectionextensions.12.1.1.nupkg.sha512",
+        "fluentvalidation.dependencyinjectionextensions.nuspec",
+        "lib/net8.0/FluentValidation.DependencyInjectionExtensions.dll",
+        "lib/net8.0/FluentValidation.DependencyInjectionExtensions.xml"
       ]
     },
     "MediatR/14.2.0": {
@@ -1768,10 +1871,25 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "BuildingBlocks.Application/1.0.0": {
+      "type": "project",
+      "path": "../../../BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj",
+      "msbuildProject": "../../../BuildingBlocks/BuildingBlocks.Application/BuildingBlocks.Application.csproj"
+    },
     "BuildingBlocks.Domain/1.0.0": {
       "type": "project",
       "path": "../../../BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj",
       "msbuildProject": "../../../BuildingBlocks/BuildingBlocks.Domain/BuildingBlocks.Domain.csproj"
+    },
+    "Catalog.Application/1.0.0": {
+      "type": "project",
+      "path": "../Catalog.Application/Catalog.Application.csproj",
+      "msbuildProject": "../Catalog.Application/Catalog.Application.csproj"
+    },
+    "Catalog.Contracts/1.0.0": {
+      "type": "project",
+      "path": "../Catalog.Contracts/Catalog.Contracts.csproj",
+      "msbuildProject": "../Catalog.Contracts/Catalog.Contracts.csproj"
     },
     "Catalog.Domain/1.0.0": {
       "type": "project",
@@ -1781,6 +1899,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "Catalog.Application >= 1.0.0",
       "Catalog.Domain >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 10.0.10",
       "Microsoft.EntityFrameworkCore.SqlServer >= 10.0.10"
@@ -1819,6 +1938,9 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
+            "D:\\NETPrac\\eShop\\src\\Modules\\Catalog\\Catalog.Application\\Catalog.Application.csproj": {
+              "projectPath": "D:\\NETPrac\\eShop\\src\\Modules\\Catalog\\Catalog.Application\\Catalog.Application.csproj"
+            },
             "D:\\NETPrac\\eShop\\src\\Modules\\Catalog\\Catalog.Domain\\Catalog.Domain.csproj": {
               "projectPath": "D:\\NETPrac\\eShop\\src\\Modules\\Catalog\\Catalog.Domain\\Catalog.Domain.csproj"
             }

@@ -1,4 +1,4 @@
-namespace Catalog.Application.Products;
+namespace Catalog.Application.Features.Products;
 
 public record CatalogItemDto(
     int Id,

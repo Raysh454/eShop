@@ -4,12 +4,12 @@ namespace Catalog.Domain;
 
 public class CatalogBrand : Entity<int>
 {
-    public string Brand { get; private set; }
+    public string Brand { get; private set; } = null!;
 
     protected CatalogBrand() { }
 
     public CatalogBrand(string brand)
     {
-        Brand = brand;
+        Brand = string.IsNullOrWhiteSpace(brand) ? throw new ArgumentException("Brand is required.", nameof(brand)) : brand.Trim();
     }
 }

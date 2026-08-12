@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuildingBlocks.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d8017a862ed737bb46ce0f408c8974982870d8a0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+87964b4a3ac60cb717a113204eff2b58a754f119")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuildingBlocks.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuildingBlocks.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
