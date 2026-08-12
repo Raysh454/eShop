@@ -321,6 +321,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
+          "FluentValidation": "12.1.1",
           "MediatR": "14.2.0"
         },
         "compile": {
@@ -902,11 +903,11 @@
       "BuildingBlocks.Application >= 1.0.0",
       "Catalog.Contracts >= 1.0.0",
       "Catalog.Domain >= 1.0.0",
+      "FluentValidation >= 12.1.1",
       "FluentValidation.DependencyInjectionExtensions >= 12.1.1",
       "MediatR >= 14.2.0",
       "Microsoft.EntityFrameworkCore >= 10.0.10",
-      "Microsoft.Extensions.DependencyInjection >= 10.0.10",
-      "fluentvalidation >= 12.1.1"
+      "Microsoft.Extensions.DependencyInjection >= 10.0.10"
     ]
   },
   "packageFolders": {
@@ -971,6 +972,10 @@
         "framework": "net10.0",
         "targetAlias": "net10.0",
         "dependencies": {
+          "FluentValidation": {
+            "target": "Package",
+            "version": "[12.1.1, )"
+          },
           "FluentValidation.DependencyInjectionExtensions": {
             "target": "Package",
             "version": "[12.1.1, )"
@@ -986,10 +991,6 @@
           "Microsoft.Extensions.DependencyInjection": {
             "target": "Package",
             "version": "[10.0.10, )"
-          },
-          "fluentvalidation": {
-            "target": "Package",
-            "version": "[12.1.1, )"
           }
         },
         "imports": [

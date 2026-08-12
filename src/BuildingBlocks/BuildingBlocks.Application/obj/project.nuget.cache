@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "L4McrA4j+G0=",
+  "dgSpecHash": "drzGS8GGFpA=",
   "success": true,
   "projectFilePath": "D:\\NETPrac\\eShop\\src\\BuildingBlocks\\BuildingBlocks.Application\\BuildingBlocks.Application.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Quanrio\\.nuget\\packages\\fluentvalidation\\12.1.1\\fluentvalidation.12.1.1.nupkg.sha512",
     "C:\\Users\\Quanrio\\.nuget\\packages\\mediatr\\14.2.0\\mediatr.14.2.0.nupkg.sha512",
     "C:\\Users\\Quanrio\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\Quanrio\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512",

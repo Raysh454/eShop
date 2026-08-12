@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 using FluentValidation;
 using MediatR;
+using BuildingBlocks.Application;
 
 namespace Catalog.Application.Extensions;
 
@@ -15,7 +15,7 @@ public static class CatalogApplicationExtensions
         });
 
         services.AddValidatorsFromAssembly(typeof(CatalogApplicationExtensions).Assembly);
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Va))
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         return services;
     }
