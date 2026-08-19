@@ -1,24 +1,22 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using MediatR;
 using Catalog.Application.Features.Products;
 using Catalog.Application.Features.Products.GetProducts;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Catalog.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/catalog/products")]
 [Tags("Catalog-Products")]
-public sealed class ProductsController(IMediator mediatr) : ControllerBase
+public sealed class ProductsController(ISender sender) : ControllerBase
 {
-    // <summary> List all products in catalog </summary>
-    [HttpGet("/all")]
-    [ProducesResponseType(typeof(CatalogItemDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAllProducts(CancellationToken cancellationToken)
+    // <summary> List all products in the catalog. </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<CatalogItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<CatalogItemDto>>> GetProducts(CancellationToken cancellationToken)
     {
-        var result = await mediatr.Send(new GetProductsQuery(), cancellationToken);
-        return Ok(result);
+        var products = await sender.Send(new GetProductsQuery(), cancellationToken);
+        return Ok(products);
     }
 }
