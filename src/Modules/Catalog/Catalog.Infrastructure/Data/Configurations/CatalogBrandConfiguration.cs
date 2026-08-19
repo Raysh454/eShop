@@ -2,7 +2,7 @@ using Catalog.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Catalog.Infrastructure.EntityConfigurations;
+namespace Catalog.Infrastructure.Data.Configurations;
 
 public class CatalogBrandConfiguration : IEntityTypeConfiguration<CatalogBrand>
 {
@@ -13,11 +13,13 @@ public class CatalogBrandConfiguration : IEntityTypeConfiguration<CatalogBrand>
         builder.HasKey(cb => cb.Id);
 
         builder.Property(cb => cb.Id)
-            .UseHiLo("catalog_brand_hilo")
+            .UseHiLo("catalog_brand_hilo", CatalogContext.Schema)
             .IsRequired();
 
         builder.Property(cb => cb.Brand)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(CatalogBrand.MaxBrandLength);
+
+        builder.HasIndex(cb => cb.Brand).IsUnique();
     }
 }
