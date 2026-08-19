@@ -7,7 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup Label="Catalog module">
+    <ProjectReference Include="..\..\Modules\Catalog\Catalog.API\Catalog.API.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalog\Catalog.Infrastructure\Catalog.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Catalog.Tests.Integration" />
   </ItemGroup>
 
 </Project>
