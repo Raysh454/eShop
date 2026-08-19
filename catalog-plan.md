@@ -1,15 +1,17 @@
 # Catalog module completion plan
 
-**Current status:** Phases 0-4 are complete. `dotnet build eShop.slnx` -> 0
-errors, 0 warnings. `dotnet test` -> 142 passing (134 unit, 8 architecture).
-The module is verified end to end against SQL Server 2022: migrations apply
-into the `catalog` schema, seeding succeeds, full product CRUD plus price and
-stock operations persist, and the three error paths return the expected
-problem-details shapes.
+**Current status:** Phases 0-4 and 6 are complete. `dotnet build eShop.slnx`
+-> 0 errors, 0 warnings. `dotnet test` -> 173 passing (134 unit, 8
+architecture, 31 integration on Testcontainers against SQL Server 2022).
 
-Still open: Phase 5 (Contracts, Outbox, RabbitMQ), Phase 6 integration tests
-with Testcontainers, and Phase 7 ops. No integration test exercises the
-database yet; persistence has been verified manually, not automatically.
+Persistence, the full HTTP surface and the error mapping are all covered
+automatically now, so a regression fails the build rather than waiting to be
+noticed. The round-trip test was mutation-checked against the original
+PictureUri defect.
+
+Still open: Phase 5 (Contracts, Outbox, RabbitMQ) and Phase 7 (ops). The
+outbox tests in Phase 5 reuse the Testcontainers fixture added here; a
+RabbitMQ container joins it at that point.
 
 **Decision taken:** `Money` (amount + 3-letter ISO currency, non-negative, max
 two decimal places) replaced `decimal Price`, per architecture.md. Done before
@@ -17,7 +19,7 @@ any migration existed, so it cost nothing; reversing it later would not be free.
 
 ## Known defects found in the scaffold
 
-Ten of the twelve are resolved:
+Eleven of the twelve are resolved:
 
 | # | Defect | Resolved by |
 | --- | --- | --- |
@@ -34,11 +36,11 @@ Ten of the twelve are resolved:
 
 Still open:
 
-- **D10** — `Catalog.Tests.Integration` still has no project references and one
-  skipped placeholder test. Phase 6.
+- **D10** — resolved in Phase 6. The project has its references and 31 real
+  tests in place of the skipped placeholder.
 - **D11** — the `Class1.cs` placeholders are gone, but `BuildingBlocks.Infrastructure`
   is now simply empty. It gains real content (`OutboxMessage`,
-  `IIntegrationEventPublisher`) in Phase 5.
+  `IIntegrationEventPublisher`) in Phase 5. This is the only one still open.
 
 ---
 
@@ -105,10 +107,13 @@ Still open:
 
 ## Phase 6 — Tests
 
-- [ ] `Catalog.Tests.Integration`: add the missing project references **(D10)**, plus `Testcontainers.MsSql` and `Testcontainers.RabbitMq`; a `CatalogDatabaseFixture` that applies migrations, shared through a collection fixture.
-- [ ] Integration tests: repository round trip (this is the regression guard for **D4**), migrations apply cleanly, unique-index violations, outbox row written in the same transaction, outbox processor publishes and marks processed.
-- [ ] `WebApplicationFactory<Program>` end-to-end tests over the real endpoints — create → get → change price → remove stock — including the `400`/`404` mappings.
-- [x] Extend `tests/Architecture.Tests/ArchTest.cs`; it currently checks only two of the documented rules. Add: Domain has no EF Core/ASP.NET/RabbitMQ dependency; Application has no EF Core or ASP.NET types; API has no `DbContext` dependency; Contracts references nothing; every `ICommand`/`IQuery` has a handler; every command has a validator.
+- [x] `Catalog.Tests.Integration`: add the missing project references **(D10)** plus `Testcontainers.MsSql`; a `CatalogDatabaseFixture` that applies migrations, shared through a collection fixture.
+- [x] Persistence tests: full round trip (the regression guard for **D4**, mutation-checked), identity assigned on `Add`, `Money` in separate amount/currency columns, domain events not persisted, unique-index violations, and `RowVersion` catching concurrent stock changes.
+- [x] Schema-drift tests: no pending migrations, and no pending model changes — the latter catches a configuration edit made without scaffolding a migration.
+- [x] Read-side tests: paging, non-overlapping pages, brand filter, name search, empty-result paging metadata, existence checks.
+- [x] `WebApplicationFactory<Program>` end-to-end tests over the real endpoints — create → get → change price → stock → delete — including the `400`/`404` mappings.
+- [x] Extend `tests/Architecture.Tests/ArchTest.cs` from 2 rules to 8: Domain has no EF Core/ASP.NET/RabbitMQ/validation dependency; Application has no EF Core or ASP.NET types; API has no `DbContext` dependency; Contracts references nothing; request handlers do not live in Infrastructure; commands and queries are records or sealed; every request has a handler.
+- [ ] Deferred to Phase 5, since there is nothing to test until the outbox exists: `Testcontainers.RabbitMq`, an outbox row written in the same transaction as the aggregate, and the processor publishing and stamping `ProcessedOn`.
 
 ## Phase 7 — Ops
 
