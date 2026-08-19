@@ -1,37 +1,44 @@
 # Catalog module completion plan
 
-**Current status:** Phases 0 and 1 are complete, plus the persistence *mapping*
-from Phase 4. `dotnet build eShop.slnx` → 0 errors, 0 warnings;
-`dotnet test` → 110 unit tests passing. `GET /api/catalog/products` serves
-`200 []` from the running host.
+**Current status:** Phases 0-4 are complete. `dotnet build eShop.slnx` -> 0
+errors, 0 warnings. `dotnet test` -> 142 passing (134 unit, 8 architecture).
+The module is verified end to end against SQL Server 2022: migrations apply
+into the `catalog` schema, seeding succeeds, full product CRUD plus price and
+stock operations persist, and the three error paths return the expected
+problem-details shapes.
 
-Still open: the two handlers remain stubs, so nothing is read from or written to
-a database yet. Repositories, migrations and the outbox are next.
-
-*Original baseline: the module was scaffolded with stub handlers, no
-persistence, and a host that did not compose the module at all (0 errors,
-7 warnings).*
+Still open: Phase 5 (Contracts, Outbox, RabbitMQ), Phase 6 integration tests
+with Testcontainers, and Phase 7 ops. No integration test exercises the
+database yet; persistence has been verified manually, not automatically.
 
 **Decision taken:** `Money` (amount + 3-letter ISO currency, non-negative, max
 two decimal places) replaced `decimal Price`, per architecture.md. Done before
 any migration existed, so it cost nothing; reversing it later would not be free.
 
-## Known defects to fix along the way
+## Known defects found in the scaffold
 
-| # | Where | Problem |
+Ten of the twelve are resolved:
+
+| # | Defect | Resolved by |
 | --- | --- | --- |
-| D1 | `src/eShop/eShop.API/Program.cs` | Still the `WeatherForecast` template. No `AddCatalog*`, no controllers, no DbContext. |
-| D2 | `eShop.slnx` | `eShop.API` is **not in the solution** — the host is never built or tested by CI. |
-| D3 | `Catalog.API/Controllers/ProductsController.cs` | `[HttpGet("/all")]` has a leading slash, which discards the `api/[controller]` prefix and maps to `/all`. Response attributes also claim `201 Created` and a single `CatalogItemDto` for a list `GET`. |
-| D4 | `CatalogItemConfiguration.cs` | `builder.Ignore(ci => ci.PictureUri)` while the domain requires `PictureUri` → the value is silently dropped on every round trip. |
-| D5 | `CatalogItemConfiguration.cs` | No config for `Description`, `AvailableStock`, thresholds, or `OnReorder`; `Name` capped at 50 with no matching domain rule. |
-| D6 | `CatalogContext.cs` | Namespace is `Catalog.Infrastructure`, configurations are in `Catalog.Infrastructure.EntityConfigurations` — neither matches the `Data` / `Data/Configurations` folders. |
-| D7 | `BuildingBlocks.Domain/Entity.cs` | All 7 build warnings (CS8618/CS8602/CS8625/CS8765/CS8767) — nullable annotations plus a possible NRE in `Equals`/`GetHashCode`. |
-| D8 | repo | 129 `obj/`/`bin/` files are tracked in git despite `.gitignore` covering them; they churn on every build. |
-| D9 | `Catalog.Application.csproj` | References `Microsoft.EntityFrameworkCore` — architecture.md forbids EF types in Application. |
-| D10 | `Catalog.Tests.Integration.csproj` | No project references at all; one skipped placeholder test. |
-| D11 | `BuildingBlocks.Contracts`, `BuildingBlocks.Infrastructure` | Empty `Class1.cs` placeholders, no real content. |
-| D12 | `ProductCreatedDomainEvent` | Carries only `Name`. At `Create()` time `Id` is still 0, so an integration event cannot be built from it. |
+| D1 | Host served the `WeatherForecast` template | Phase 0 — `Program.cs` composes the module |
+| D2 | `eShop.API` missing from `eShop.slnx` | Phase 0 — added, so CI builds the host |
+| D3 | `[HttpGet("/all")]` discarded the route prefix | Phase 0 — `api/catalog/products` |
+| D4 | `PictureUri` ignored by EF, silently dropped on save | Phase 4 — persisted; confirmed round-tripping against SQL Server |
+| D5 | `Description`, stock columns and `OnReorder` unconfigured | Phase 4 — configured, lengths taken from the aggregate's constants |
+| D6 | Namespaces did not match the `Data` folders | Phase 4 |
+| D7 | Seven build warnings and a possible NRE in `Entity` | Phase 0 — 0 warnings |
+| D8 | 129 `obj`/`bin` files tracked in git | Phase 0 |
+| D9 | `Catalog.Application` referenced EF Core | Phase 2 — read port returns DTOs, package reference dropped, now enforced by an architecture test |
+| D12 | `ProductCreatedDomainEvent` could never carry an `Id` | Phase 1 — carries the aggregate |
+
+Still open:
+
+- **D10** — `Catalog.Tests.Integration` still has no project references and one
+  skipped placeholder test. Phase 6.
+- **D11** — the `Class1.cs` placeholders are gone, but `BuildingBlocks.Infrastructure`
+  is now simply empty. It gains real content (`OutboxMessage`,
+  `IIntegrationEventPublisher`) in Phase 5.
 
 ---
 
@@ -58,23 +65,23 @@ any migration existed, so it cost nothing; reversing it later would not be free.
 
 ## Phase 2 — Application slices
 
-- [ ] `Catalog.Application/Abstractions/`:
+- [x] `Catalog.Application/Abstractions/`:
   - `ICatalogItemRepository` — `GetByIdAsync`, `Add`, `Remove`
   - `IUnitOfWork` — `SaveChangesAsync`
   - `ICatalogQueries` — read-side port returning DTOs, so Application keeps no EF dependency **(then drop the EF package reference, D9)**
-- [ ] Wire the real `CreateProductHandler` (it currently returns `0`): build the aggregate, `Add`, `SaveChangesAsync`, return the new `Id`.
+- [x] Wire the real `CreateProductHandler` (it currently returns `0`): build the aggregate, `Add`, `SaveChangesAsync`, return the new `Id`.
 - [x] Add the missing `CreateProductValidator`. `AddCatalogApplication` already registers validators and the pipeline behavior, so today nothing is actually validated.
-- [ ] Wire `GetProductsHandler` (it currently returns an empty list) with paging and optional `brandId`/`typeId` filters; add `PagedResult<T>` to `BuildingBlocks.Application`.
-- [ ] New slices under `Features/Products/`: `GetProduct` (by id), `UpdateProduct`, `ChangeProductPrice`, `AddStock`, `RemoveStock`, `DeleteProduct`.
-- [ ] New slices under `Features/Brands/` and `Features/Types/`: `GetBrands`, `GetTypes` — needed by any UI and by create-product validation.
-- [ ] `NotFoundException` plus a consistent result convention, so handlers never return `null` into a controller.
-- [ ] Handler unit tests against fake repository/query ports.
+- [x] Wire `GetProductsHandler` (it currently returns an empty list) with paging and optional `brandId`/`typeId` filters; add `PagedResult<T>` to `BuildingBlocks.Application`.
+- [x] New slices under `Features/Products/`: `GetProduct` (by id), `UpdateProduct`, `ChangeProductPrice`, `AddStock`, `RemoveStock`, `DeleteProduct`.
+- [x] New slices under `Features/Brands/` and `Features/Types/`: `GetBrands`, `GetTypes` — needed by any UI and by create-product validation.
+- [x] `NotFoundException` plus a consistent result convention, so handlers never return `null` into a controller.
+- [x] Handler unit tests against fake repository/query ports.
 
 ## Phase 3 — HTTP surface
 
-- [ ] Controller actions for every slice above — transport only, with correct `ProducesResponseType` per verb (`201` + `CreatedAtAction` for create, `204` for price/stock/delete, `404` for missing).
-- [ ] An `IExceptionHandler` in the host mapping `ValidationException` → `400 ValidationProblemDetails`, `CatalogDomainException` → `400`, `NotFoundException` → `404`.
-- [ ] Verify the generated OpenAPI document in Development, including the `Catalog-Products` tag grouping.
+- [x] Controller actions for every slice above — transport only, with correct `ProducesResponseType` per verb (`201` + `CreatedAtAction` for create, `204` for price/stock/delete, `404` for missing).
+- [x] An `IExceptionHandler` in the host mapping `ValidationException` → `400 ValidationProblemDetails`, `CatalogDomainException` → `400`, `NotFoundException` → `404`.
+- [x] Verify the generated OpenAPI document in Development, including the `Catalog-Products` tag grouping.
 
 ## Phase 4 — Persistence
 
@@ -82,10 +89,10 @@ any migration existed, so it cost nothing; reversing it later would not be free.
 - [x] `builder.HasDefaultSchema("catalog")` — architecture.md requires a per-module schema and nothing sets one today.
 - [x] Fix `CatalogItemConfiguration`: persist `PictureUri` **(D4)**; configure `Description`, the stock columns and `OnReorder`; map `Money` as an owned type; add `RowVersion` for optimistic concurrency on stock changes; index `(CatalogBrandId, CatalogTypeId)` **(D5)**.
 - [x] Unique indexes on `CatalogBrand.Brand` and `CatalogType.Type`.
-- [ ] `Catalog.Infrastructure/Repositories/CatalogItemRepository.cs`, `CatalogQueries.cs` (`AsNoTracking` projections straight to DTOs), and `UnitOfWork`.
+- [x] `Catalog.Infrastructure/Repositories/CatalogItemRepository.cs`, `CatalogQueries.cs` (`AsNoTracking` projections straight to DTOs), and `UnitOfWork`.
 - [x] `Catalog.Infrastructure/Extensions/CatalogInfrastructureExtensions.cs` — `AddCatalogInfrastructure(IConfiguration)` registering the DbContext, SQL Server provider and ports.
-- [ ] First migration into `Data/Migrations/`, using the `catalog` schema and its own `__EFMigrationsHistory`; seed brands, types and a handful of items from `Data/Seeding/`.
-- [ ] Connection string plus a design-time factory so `dotnet ef` works directly against `Catalog.Infrastructure`.
+- [x] First migration into `Data/Migrations/`, using the `catalog` schema and its own `__EFMigrationsHistory`; seed brands, types and a handful of items from `Data/Seeding/`.
+- [x] Connection string plus a design-time factory so `dotnet ef` works directly against `Catalog.Infrastructure`.
 
 ## Phase 5 — Contracts, Outbox, RabbitMQ
 
@@ -101,7 +108,7 @@ any migration existed, so it cost nothing; reversing it later would not be free.
 - [ ] `Catalog.Tests.Integration`: add the missing project references **(D10)**, plus `Testcontainers.MsSql` and `Testcontainers.RabbitMq`; a `CatalogDatabaseFixture` that applies migrations, shared through a collection fixture.
 - [ ] Integration tests: repository round trip (this is the regression guard for **D4**), migrations apply cleanly, unique-index violations, outbox row written in the same transaction, outbox processor publishes and marks processed.
 - [ ] `WebApplicationFactory<Program>` end-to-end tests over the real endpoints — create → get → change price → remove stock — including the `400`/`404` mappings.
-- [ ] Extend `tests/Architecture.Tests/ArchTest.cs`; it currently checks only two of the documented rules. Add: Domain has no EF Core/ASP.NET/RabbitMQ dependency; Application has no EF Core or ASP.NET types; API has no `DbContext` dependency; Contracts references nothing; every `ICommand`/`IQuery` has a handler; every command has a validator.
+- [x] Extend `tests/Architecture.Tests/ArchTest.cs`; it currently checks only two of the documented rules. Add: Domain has no EF Core/ASP.NET/RabbitMQ dependency; Application has no EF Core or ASP.NET types; API has no `DbContext` dependency; Contracts references nothing; every `ICommand`/`IQuery` has a handler; every command has a validator.
 
 ## Phase 7 — Ops
 
