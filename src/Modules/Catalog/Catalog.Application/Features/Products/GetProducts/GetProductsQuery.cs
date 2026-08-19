@@ -1,6 +1,12 @@
+using BuildingBlocks.Application;
 using BuildingBlocks.Application.CQRS;
-using System.Collections.Generic;
 
 namespace Catalog.Application.Features.Products.GetProducts;
 
-public record GetProductsQuery() : IQuery<IEnumerable<CatalogItemDto>>;
+public record GetProductsQuery(
+    int Page = 1,
+    int PageSize = 20,
+    int? BrandId = null,
+    int? TypeId = null,
+    string? Search = null
+) : IQuery<PagedResult<CatalogItemDto>>;

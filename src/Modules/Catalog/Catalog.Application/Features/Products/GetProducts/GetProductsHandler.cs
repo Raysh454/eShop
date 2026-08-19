@@ -1,16 +1,14 @@
+using BuildingBlocks.Application;
 using BuildingBlocks.Application.CQRS;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using Catalog.Application.Abstractions;
 
 namespace Catalog.Application.Features.Products.GetProducts;
 
-public class GetProductsHandler : IQueryHandler<GetProductsQuery, IEnumerable<CatalogItemDto>>
+public sealed class GetProductsHandler(ICatalogQueries queries)
+    : IQueryHandler<GetProductsQuery, PagedResult<CatalogItemDto>>
 {
-    public Task<IEnumerable<CatalogItemDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
-    {
-        // For now, returning an empty list to compile.
-        IEnumerable<CatalogItemDto> items = new List<CatalogItemDto>();
-        return Task.FromResult(items);
-    }
+    public Task<PagedResult<CatalogItemDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken) =>
+        queries.GetProductsAsync(
+            new ProductFilter(request.Page, request.PageSize, request.BrandId, request.TypeId, request.Search),
+            cancellationToken);
 }
