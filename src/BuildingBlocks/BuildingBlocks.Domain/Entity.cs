@@ -1,8 +1,9 @@
 namespace BuildingBlocks.Domain;
 
 public abstract class Entity<TId> : IEquatable<Entity<TId>>
+    where TId : notnull
 {
-    public TId Id { get; protected set; }
+    public TId Id { get; protected set; } = default!;
 
     protected Entity() { }
 
@@ -11,37 +12,43 @@ public abstract class Entity<TId> : IEquatable<Entity<TId>>
         Id = id;
     }
 
-    public static bool operator ==(Entity<TId> a, Entity<TId> b)
+    public static bool operator ==(Entity<TId>? a, Entity<TId>? b)
     {
         if (a is null && b is null) return true;
         if (a is null || b is null) return false;
         return a.Equals(b);
     }
 
-    public static bool operator !=(Entity<TId> a, Entity<TId> b)
+    public static bool operator !=(Entity<TId>? a, Entity<TId>? b)
     {
         return !(a == b);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if (obj == null || obj.GetType() != GetType())
+        if (obj is null || obj.GetType() != GetType())
         {
             return false;
         }
 
-        var other = (Entity<TId>)obj;
-        return Id.Equals(other.Id);
+        return Equals((Entity<TId>)obj);
     }
 
-    public bool Equals(Entity<TId> other)
+    public bool Equals(Entity<TId>? other)
     {
-        if (other == null) return false;
-        return Id.Equals(other.Id);
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (other.GetType() != GetType()) return false;
+
+        // Transient entities have no identity yet, so identity comparison would
+        // wrongly report two unsaved entities as equal.
+        if (EqualityComparer<TId>.Default.Equals(Id, default!)) return false;
+
+        return EqualityComparer<TId>.Default.Equals(Id, other.Id);
     }
 
     public override int GetHashCode()
     {
-        return Id.GetHashCode();
+        return EqualityComparer<TId>.Default.GetHashCode(Id);
     }
 }
