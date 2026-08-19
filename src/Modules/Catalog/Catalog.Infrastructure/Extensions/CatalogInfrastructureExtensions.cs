@@ -1,4 +1,7 @@
+using Catalog.Application.Abstractions;
 using Catalog.Infrastructure.Data;
+using Catalog.Infrastructure.Data.Seeding;
+using Catalog.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +21,27 @@ public static class CatalogInfrastructureExtensions
                 sql.EnableRetryOnFailure();
             }));
 
+        services.AddScoped<ICatalogItemRepository, CatalogItemRepository>();
+        services.AddScoped<ICatalogQueries, CatalogQueries>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         return services;
+    }
+
+    // <summary> Applies migrations and optionally seeds. Intended for development
+    // and integration tests; production should run a migration bundle as a
+    // separate deployment step rather than migrating on startup. </summary>
+    public static async Task InitialiseCatalogAsync(
+        this IServiceProvider services,
+        bool seed = false,
+        CancellationToken cancellationToken = default)
+    {
+        using var scope = services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<CatalogContext>();
+
+        await context.Database.MigrateAsync(cancellationToken);
+
+        if (seed)
+            await CatalogSeeder.SeedAsync(context, cancellationToken);
     }
 }
