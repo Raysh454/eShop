@@ -2,8 +2,8 @@ using BuildingBlocks.Domain;
 
 namespace Catalog.Domain.Events;
 
-public sealed record ProductCreatedDomainEvent(string Name) : IDomainEvent
-{
-    public Guid EventId { get; } = Guid.NewGuid();
-    public DateTime OccurredOn { get; } = DateTime.UtcNow;
-}
+// <summary> Carries the aggregate rather than a snapshot: the identity is not
+// assigned until the item is tracked, and events are dispatched during
+// SaveChanges, by which point Id is populated. </summary>
+
+public sealed record ProductCreatedDomainEvent(CatalogItem Item) : DomainEvent;
